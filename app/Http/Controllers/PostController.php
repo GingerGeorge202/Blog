@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostRequest;
 use App\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -9,6 +10,11 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except('index','show');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -46,13 +52,13 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
         $post=new Post();
         $post->title = $request->title;
         $post->short_title = Str::length($request->title)>30 ? Str::substr($request->title, 0, 30) . '...' : $request->title;
         $post->descr = $request->descr;
-        $post->author_id = rand(1,4);
+        $post->author_id = \Auth::user()->id;
 
         if($request->file('img')){
             $path=Storage::putFile('public',$request->file('img'));
@@ -73,6 +79,11 @@ class PostController extends Controller
     {
         $post=Post::join('users','author_id','=','users.id')
                 ->find($id);
+
+        if (!$post){
+            return redirect()->route('post.index')->withErrors('Даного поста не існує');
+        }
+
         return view('posts.show', compact('post'));
     }
 
@@ -85,6 +96,13 @@ class PostController extends Controller
     public function edit($id)
     {
         $post=Post::find($id);
+
+        if (!$post){
+            return redirect()->route('post.index')->withErrors('Даного поста не існує');
+        }
+        if ($post->author_id != \Auth::user()->id){
+            return redirect()->route('post.index')->withErrors('Ви не можете редагувати цей пост');
+        }
         return view('posts.edit', compact('post'));
     }
 
@@ -95,9 +113,12 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PostRequest $request, $id)
     {
         $post=Post::find($id);
+        if ($post->author_id != \Auth::user()->id){
+            return redirect()->route('post.index')->withErrors('Ви не можете редагувати цей пост');
+        }
         $post->title = $request->title;
         $post->short_title = Str::length($request->title)>30 ? Str::substr($request->title, 0, 30) . '...' : $request->title;
         $post->descr = $request->descr;
@@ -121,6 +142,9 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post=Post::find($id);
+        if ($post->author_id != \Auth::user()->id){
+            return redirect()->route('post.index')->withErrors('Ви не можете видалити цей пост');
+        }
         $post->delete();
         return redirect()->route('post.index')->with('success','Пост видалено');
     }

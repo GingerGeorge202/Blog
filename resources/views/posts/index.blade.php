@@ -5,17 +5,17 @@
             @if(isset($_GET['search']))
                 @if(count($posts)>0)
                     @if(count($posts)==1)
-                        <h2>Результатів по запиту <?=$_GET['search']?></h2>
+                        <h2>Результатів по запиту "<?=htmlspecialchars($_GET['search'])?>"</h2>
                         <p class="lead">Усього знайдено {{count($posts)}} пост</p>
                     @elseif(count($posts)>1 && count($posts)<5)
-                        <h2>Результатів по запиту '<?=$_GET['search']?>'</h2>
+                        <h2>Результатів по запиту "<?=htmlspecialchars($_GET['search'])?>"</h2>
                         <p class="lead">Усього знайдено {{count($posts)}} поста</p>
                     @else
-                        <h2>Результатів по запиту <?=$_GET['search']?></h2>
+                        <h2>Результатів по запиту "<?=htmlspecialchars($_GET['search'])?>"</h2>
                         <p class="lead">Усього знайдено {{count($posts)}} постів</p>
                     @endif
                 @else
-                    <h2>По запиту <?=$_GET['search']?> не знайдено постів</h2>
+                    <h2>По запиту "<?=htmlspecialchars($_GET['search'])?>" не знайдено постів</h2>
                     <a href="{{route('post.index')}}" class="btn btn-outline-primary">Показати усі пости</a>
                 @endif
             @endif
