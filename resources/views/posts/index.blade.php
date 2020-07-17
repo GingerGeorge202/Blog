@@ -21,6 +21,7 @@
             @endif
         </div>
     </div>
+
     <div class="row">
         @foreach($posts as $post)
         <div class="col-6">
